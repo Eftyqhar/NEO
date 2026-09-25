@@ -141,14 +141,17 @@ def start(
         if wf.enabled and wf.trigger.type.lower() != "manual":
             dashboard.set_listener(wf.name, f"{wf.trigger.type.upper()}")
 
-    runner.on_run_complete = lambda res: dashboard.add_run(res)
+    # Load initial history from ledger
+    dashboard.sync_from_ledger(runner.ledger)
+    runner.on_run_complete = lambda res: dashboard.sync_from_ledger(runner.ledger)
 
     async def main_loop():
         await runner.start_daemon(dir_path)
         with Live(dashboard.generate_view(), refresh_per_second=2, console=console) as live:
             try:
                 while True:
-                    await asyncio.sleep(0.5)
+                    await asyncio.sleep(1.0)
+                    dashboard.sync_from_ledger(runner.ledger)
                     live.update(dashboard.generate_view())
             except (asyncio.CancelledError, KeyboardInterrupt):
                 pass
