@@ -3,8 +3,11 @@
 import os
 import re
 from typing import Optional
+from dotenv import load_dotenv
 import httpx
 import yaml
+
+load_dotenv()
 
 SYSTEM_PROMPT = """
 You are the workflow generator for Neo, a lightweight CLI workflow automation engine like n8n.

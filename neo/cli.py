@@ -6,9 +6,14 @@ import os
 import sys
 from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
 import typer
 from rich.console import Console
 from rich.live import Live
+from rich.panel import Panel
+
+# Ensure .env is always loaded into os.environ
+load_dotenv()
 
 if sys.platform == "win32":
     try:
@@ -152,7 +157,7 @@ def create(
     with open(out_file, "w", encoding="utf-8") as f:
         f.write(yaml_content)
 
-    console.print(f"[green]✔ Workflow created successfully at:[/] [bold cyan]{out_file}[/]")
+    console.print(f"[green][OK] Workflow created successfully at:[/] [bold cyan]{out_file}[/]")
     console.print(Panel(yaml_content, title=f"Generated: {out_file}", border_style="green"))
 
 

@@ -1,0 +1,22 @@
+name: "Invoice Email Monitor"
+description: "Watch incoming emails for invoices, extract total amount with AI, and send a Telegram alert"
+trigger:
+  type: imap
+  host: "{{ env.EMAIL_HOST }}"
+  port: 993
+  username: "{{ env.EMAIL_USER }}"
+  password: "{{ env.EMAIL_PASS }}"
+  folder: "INBOX"
+steps:
+  - id: filter_invoices
+    type: filter
+    condition: "'invoice' in steps.trigger.subject.lower() or 'invoice' in steps.trigger.body.lower()"
+  - id: extract_amount
+    type: ai
+    prompt: "Extract the total amount from the following invoice email. Return only the amount with currency symbol (e.g. '$1,234.56'). If no amount is found, return 'No amount found'."
+    input: "{{ steps.trigger.body }}"
+  - id: send_alert
+    type: telegram
+    bot_token: "{{ env.TELEGRAM_BOT_TOKEN }}"
+    chat_id: "{{ env.TELEGRAM_CHAT_ID }}"
+    message: "📄 *New Invoice Detected*\n\n👤 From: {{ steps.trigger.from }}\n📧 Subject: {{ steps.trigger.subject }}\n💰 Total Amount: {{ steps.extract_amount.output }}"
