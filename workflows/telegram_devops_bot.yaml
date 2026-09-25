@@ -1,0 +1,30 @@
+# Real-Time Telegram Command -> Shell Execution -> Telegram Reply
+name: "Telegram Remote DevOps Bot"
+description: "Listens for /status command on Telegram, queries server metrics, and replies"
+enabled: true
+
+trigger:
+  type: telegram
+  bot_token: "{{ env.TELEGRAM_BOT_TOKEN }}"
+  command: "/status"
+
+steps:
+  # 1. Run local system diagnostic command
+  - id: check_system
+    type: exec
+    command: "python -c \"import psutil, platform; print(f'OS: {platform.system()} | CPU: {psutil.cpu_percent()}% | RAM: {psutil.virtual_memory().percent}%')\""
+    continue_on_error: true
+
+  # 2. Reply back to the same chat
+  - id: send_reply
+    type: telegram
+    bot_token: "{{ env.TELEGRAM_BOT_TOKEN }}"
+    chat_id: "{{ steps.trigger.chat_id }}"
+    parse_mode: "Markdown"
+    message: |
+      🖥️ *Server Diagnostic Report*
+      *Requester:* @{{ steps.trigger.username or steps.trigger.first_name }}
+      
+      ```
+      {{ steps.check_system.stdout or 'System status: OK' }}
+      ```

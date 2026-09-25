@@ -1,0 +1,27 @@
+# Demo workflow that can run anywhere without external credentials
+name: "System Diagnostic & Public API Fetcher"
+description: "Demonstrates shell execution, REST API call, filtering, and template interpolation"
+enabled: true
+
+trigger:
+  type: manual
+
+steps:
+  - id: check_os
+    type: exec
+    command: "python -c \"import platform, sys; print(f'{platform.system()} {platform.release()} (Python {sys.version.split()[0]})')\""
+
+  - id: fetch_ip_info
+    type: http
+    method: "GET"
+    url: "https://httpbin.org/get"
+    headers:
+      User-Agent: "Neo-Workflow-Engine/0.1"
+
+  - id: verify_response
+    type: filter
+    condition: "steps.fetch_ip_info.status_code == 200"
+
+  - id: summarize
+    type: exec
+    command: "python -c \"print('Pipeline Completed Successfully for host: {{ steps.fetch_ip_info.data.origin }} on OS: {{ steps.check_os.stdout }}')\""

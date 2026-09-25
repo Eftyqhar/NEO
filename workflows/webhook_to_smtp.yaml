@@ -1,0 +1,29 @@
+# Real-Time HTTP Webhook -> SMTP Email Notification
+name: "Webhook to SMTP Email Alert"
+description: "Listens for incoming HTTP POST webhooks and dispatches an email via SMTP"
+enabled: true
+
+trigger:
+  type: webhook
+  port: 8080
+  path: "/webhook/alert"
+
+steps:
+  - id: send_smtp_email
+    type: smtp
+    host: "smtp.gmail.com"
+    port: 587
+    start_tls: true
+    username: "{{ env.EMAIL_USER }}"
+    password: "{{ env.EMAIL_PASS }}"
+    to: "{{ env.ADMIN_EMAIL }}"
+    subject: "Webhook Alert: {{ steps.trigger.data.title or 'New Event Received' }}"
+    body: |
+      Hello Admin,
+
+      A new webhook event was received by Neo:
+      Path: {{ steps.trigger.path }}
+      Payload: {{ steps.trigger.data }}
+
+      Regards,
+      Neo Automation Engine

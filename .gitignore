@@ -1,0 +1,19 @@
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Neo Persistence & Local Secrets
+.env
+neo_ledger.db
+*.db
+
+# Pytest & Caches
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/

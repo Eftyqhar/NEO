@@ -1,0 +1,33 @@
+# Real-Time IMAP IDLE -> Filter -> Telegram Workflow
+name: "Urgent Email to Telegram Alert"
+description: "Listens for emails via persistent IMAP IDLE push and forwards priority messages to Telegram"
+enabled: true
+
+trigger:
+  type: imap
+  host: "imap.gmail.com"
+  port: 993
+  username: "{{ env.EMAIL_USER }}"
+  password: "{{ env.EMAIL_PASS }}"
+  folder: "INBOX"
+
+steps:
+  # 1. Condition: Only process priority or invoice emails
+  - id: priority_filter
+    type: filter
+    condition: "'urgent' in steps.trigger.subject.lower() or 'invoice' in steps.trigger.subject.lower() or 'alert' in steps.trigger.subject.lower()"
+
+  # 2. Forward to Telegram
+  - id: send_telegram
+    type: telegram
+    bot_token: "{{ env.TELEGRAM_BOT_TOKEN }}"
+    chat_id: "{{ env.TELEGRAM_CHAT_ID }}"
+    parse_mode: "Markdown"
+    message: |
+      🚨 *Priority Email Received*
+      *From:* {{ steps.trigger.from }}
+      *Subject:* {{ steps.trigger.subject }}
+      *Date:* {{ steps.trigger.date }}
+
+      *Preview:*
+      {{ steps.trigger.snippet }}
