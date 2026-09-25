@@ -102,7 +102,7 @@ def start(
         raise typer.Exit(code=0)
 
     for wf in workflows:
-        if wf.enabled:
+        if wf.enabled and wf.trigger.type.lower() != "manual":
             dashboard.set_listener(wf.name, f"{wf.trigger.type.upper()}")
 
     runner.on_run_complete = lambda res: dashboard.add_run(res)

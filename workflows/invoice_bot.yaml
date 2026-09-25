@@ -2,7 +2,7 @@ name: "Invoice Email Monitor"
 description: "Watch incoming emails for invoices, extract total amount with AI, and send a Telegram alert"
 trigger:
   type: imap
-  host: "{{ env.EMAIL_HOST }}"
+  host: "imap.gmail.com"
   port: 993
   username: "{{ env.EMAIL_USER }}"
   password: "{{ env.EMAIL_PASS }}"

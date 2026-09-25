@@ -1,0 +1,20 @@
+name: "Email Summary to Telegram"
+description: "Check incoming emails, generate an AI summary, and send it to Telegram"
+trigger:
+  type: imap
+  host: "imap.gmail.com"
+  port: 993
+  username: "{{ env.EMAIL_USER }}"
+  password: "{{ env.EMAIL_PASS }}"
+  folder: "INBOX"
+steps:
+  - id: summarize_email
+    type: ai
+    prompt: "Summarize the following email in 3-5 bullet points. Include the sender, subject, key points, and any action items. Keep it concise and clear.\n\nEmail:\nFrom: {{ steps.trigger.from }}\nSubject: {{ steps.trigger.subject }}\nBody:\n{{ steps.trigger.body }}"
+    input: "{{ steps.trigger.body }}"
+
+  - id: send_to_telegram
+    type: telegram
+    bot_token: "{{ env.TELEGRAM_BOT_TOKEN }}"
+    chat_id: "{{ env.TELEGRAM_CHAT_ID }}"
+    message: "*📧 Email Summary*\n\n*From:* {{ steps.trigger.from }}\n*Subject:* {{ steps.trigger.subject }}\n\n{{ steps.summarize_email.output }}"

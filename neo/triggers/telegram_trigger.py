@@ -21,9 +21,11 @@ class TelegramTrigger(BaseTrigger):
         context = RunContext()
         cfg = self.templater.resolve(self.config.model_dump(), context)
 
-        bot_token = cfg.get("bot_token") or cfg.get("token")
-        if not bot_token:
-            raise ValueError("Telegram trigger requires 'bot_token'.")
+        bot_token = cfg.get("bot_token") or cfg.get("token") or ""
+        if not bot_token or "123456789" in str(bot_token) or "your_" in str(bot_token):
+            print("[!] Telegram trigger skipped: TELEGRAM_BOT_TOKEN contains placeholders or is not set.")
+            self.is_running = False
+            return
 
         expected_command = cfg.get("command")
         chat_id_filter = cfg.get("chat_id")

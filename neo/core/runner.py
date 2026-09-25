@@ -52,10 +52,12 @@ class WorkflowRunner:
                 print(f"[!] Warning: Failed to load workflow '{file}': {e}")
         return loaded
 
-    def create_trigger(self, workflow: WorkflowConfig) -> BaseTrigger:
+    def create_trigger(self, workflow: WorkflowConfig) -> Optional[BaseTrigger]:
         """Instantiates the appropriate real-time trigger for a workflow."""
         ttype = workflow.trigger.type.lower()
-        if ttype in ("imap", "imap_idle"):
+        if ttype == "manual":
+            return None
+        elif ttype in ("imap", "imap_idle"):
             return ImapIdleTrigger(workflow.trigger, self.engine.templater)
         elif ttype in ("telegram", "tg"):
             return TelegramTrigger(workflow.trigger, self.engine.templater)
@@ -86,8 +88,15 @@ class WorkflowRunner:
             if not wf.enabled:
                 continue
 
+            # Manual workflows are triggered on-demand via 'neo run', not background daemon
+            if wf.trigger.type.lower() == "manual":
+                continue
+
             try:
                 trigger = self.create_trigger(wf)
+                if not trigger:
+                    continue
+
                 self.active_triggers[wf.name] = trigger
 
                 # Event dispatcher closure

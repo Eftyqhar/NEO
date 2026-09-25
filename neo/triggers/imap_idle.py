@@ -40,14 +40,17 @@ class ImapIdleTrigger(BaseTrigger):
         context = RunContext()
         cfg = self.templater.resolve(self.config.model_dump(), context)
 
-        host = cfg.get("host", "imap.gmail.com")
+        raw_host = cfg.get("host")
+        host = (raw_host.strip() if isinstance(raw_host, str) else "") or "imap.gmail.com"
         port = int(cfg.get("port", 993))
-        username = cfg.get("username") or cfg.get("user")
-        password = cfg.get("password") or cfg.get("pass")
+        username = cfg.get("username") or cfg.get("user") or ""
+        password = cfg.get("password") or cfg.get("pass") or ""
         folder = cfg.get("folder", "INBOX")
 
-        if not username or not password:
-            raise ValueError("IMAP IDLE trigger requires 'username' and 'password'.")
+        if not username or not password or "your_" in username or "your_" in password:
+            print("[!] IMAP trigger skipped: EMAIL_USER / EMAIL_PASS contains placeholders or is not set.")
+            self.is_running = False
+            return
 
         self._task = asyncio.create_task(self._listen_loop(host, port, username, password, folder, on_event))
 
