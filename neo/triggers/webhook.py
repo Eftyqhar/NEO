@@ -56,8 +56,11 @@ class WebhookTrigger(BaseTrigger):
             asyncio.create_task(on_event(payload))
             return web.json_response({"ok": True, "status": "dispatched"})
 
+        async def handle_get(request: web.Request) -> web.Response:
+            return web.json_response({"status": "ready", "path": path})
+
         app.router.add_post(path, handle_post)
-        app.router.add_get(path, lambda req: web.json_response({"status": "ready", "path": path}))
+        app.router.add_get(path, handle_get)
 
         self.runner = web.AppRunner(app)
         await self.runner.setup()

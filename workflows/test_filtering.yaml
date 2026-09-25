@@ -1,0 +1,16 @@
+# Test workflow to demonstrate conditional filtering and template data flow
+name: "Alert Triage & Priority Router"
+description: "Tests priority filtering and dynamic template branching"
+enabled: true
+
+trigger:
+  type: manual
+
+steps:
+  - id: triage_filter
+    type: filter
+    condition: "'critical' in steps.trigger.severity.lower() or 'high' in steps.trigger.severity.lower()"
+
+  - id: format_alert
+    type: exec
+    command: "python -c \"print('DISPATCH ALERT: [{{ steps.trigger.severity.upper() }}] {{ steps.trigger.message }}')\""
