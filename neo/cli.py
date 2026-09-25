@@ -64,8 +64,44 @@ def run(
             console.print(f"[red]Invalid --trigger-json payload:[/red] {e}")
             raise typer.Exit(code=1)
     else:
-        # Default mock trigger payload
-        trigger_data = {"trigger_type": "manual", "source": "cli"}
+        # Generate realistic default mock payload based on trigger type
+        ttype = wf.trigger.type.lower()
+        if ttype in ("imap", "email"):
+            trigger_data = {
+                "trigger_type": "imap",
+                "from": "alice.manager@company.com",
+                "to": "team@company.com",
+                "subject": "Quarterly Performance & Project Update",
+                "date": "2026-09-25",
+                "body": (
+                    "Hello team,\n\n"
+                    "Here is the summary of our quarterly goals:\n"
+                    "1. Finish the API migration by end of week.\n"
+                    "2. Ensure all automation test suites have 100% green coverage.\n"
+                    "3. Review the pending customer invoices.\n\n"
+                    "Best regards,\nAlice"
+                ),
+                "snippet": "Hello team, Here is the summary of our quarterly goals..."
+            }
+        elif ttype in ("telegram", "tg"):
+            t_cmd = wf.trigger.model_dump().get("command") or "/status"
+            trigger_data = {
+                "trigger_type": "telegram",
+                "chat_id": "123456789",
+                "username": "demo_user",
+                "first_name": "Demo",
+                "text": t_cmd,
+                "command": t_cmd,
+                "args": []
+            }
+        elif ttype in ("webhook", "http"):
+            trigger_data = {
+                "trigger_type": "webhook",
+                "path": "/webhook/test",
+                "data": {"user": "Alice", "event": "order_completed", "amount": "$150.00"}
+            }
+        else:
+            trigger_data = {"trigger_type": "manual", "source": "cli"}
 
     with console.status(f"[cyan]Executing pipeline for '[bold white]{wf.name}[/]'...", spinner="dots"):
         result = asyncio.run(runner.execute_workflow(wf, trigger_data))
