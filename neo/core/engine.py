@@ -14,6 +14,7 @@ from neo.actions.smtp_action import SmtpAction
 from neo.actions.telegram_action import TelegramAction
 from neo.actions.filter_action import FilterAction, FilterStopException
 from neo.actions.ai_action import AiAction
+from neo.actions.imap_action import ImapAction
 
 
 class WorkflowEngine:
@@ -28,6 +29,7 @@ class WorkflowEngine:
             "telegram": TelegramAction(self.templater),
             "filter": FilterAction(self.templater),
             "ai": AiAction(self.templater),
+            "imap": ImapAction(self.templater),
         }
 
     def register_action(self, action_type: str, action: BaseAction) -> None:
